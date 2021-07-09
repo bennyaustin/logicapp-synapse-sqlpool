@@ -84,7 +84,11 @@
                   }
                 ]
               },
-              "runAfter": {}
+              "runAfter": {
+                "sku": [
+                  "Succeeded"
+                ]
+              }
             },
             "HTTP_200_Response": {
               "type": "Response",
@@ -93,7 +97,7 @@
                 "statusCode": 200
               },
               "runAfter": {
-                "HTTP": [
+                "Resume": [
                   "Succeeded"
                 ]
               }
@@ -183,7 +187,7 @@
                 ]
               }
             },
-            "HTTP": {
+            "GetAPI": {
               "type": "Http",
               "inputs": {
                 "method": "GET",
@@ -193,7 +197,134 @@
                 }
               },
               "runAfter": {
+                "pauseURI": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "action": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "action",
+                    "type": "string",
+                    "value": "@{triggerBody()?['action']}"
+                  }
+                ]
+              },
+              "runAfter": {}
+            },
+            "sku": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "sku",
+                    "type": "string",
+                    "value": "@{triggerBody()?['sku']}"
+                  }
+                ]
+              },
+              "runAfter": {
+                "action": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "resumeURI": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "resumeURI",
+                    "type": "string",
+                    "value": "@{concat('https://management.azure.com/subscriptions/',variables('subscriptionId'),'/resourceGroups/', variables('resourceGroupName'),'/providers/Microsoft.Synapse/workspaces/',variables('workspaceName'),'/sqlPools/',variables('sqlPoolName'),'/resume?api-version=', variables('apiVersion'))}"
+                  }
+                ]
+              },
+              "runAfter": {
                 "getURI": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "pauseURI": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "pauseURI",
+                    "type": "string",
+                    "value": "@concat('https://management.azure.com/subscriptions/',variables('subscriptionId'),'/resourceGroups/', variables('resourceGroupName'),'/providers/Microsoft.Synapse/workspaces/',variables('workspaceName'),'/sqlPools/',variables('sqlPoolName'),'/pause?api-version=', variables('apiVersion'))"
+                  }
+                ]
+              },
+              "runAfter": {
+                "resumeURI": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Resume": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@variables('action')",
+                      "resume"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@body('GetAPI')?['properties']?['status']",
+                      "Paused"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "ResumeAPI": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "POST",
+                    "uri": "@{variables('resumeURI')}",
+                    "authentication": {
+                      "type": "ManagedServiceIdentity"
+                    }
+                  },
+                  "runAfter": {}
+                },
+                "Until-Resume": {
+                  "type": "Until",
+                  "expression": "@equals(body('GetAPI-Resume')?['properties']?['status'], 'Online')",
+                  "limit": {
+                    "count": 5000,
+                    "timeout": "PT1H"
+                  },
+                  "actions": {
+                    "GetAPI-Resume": {
+                      "type": "Http",
+                      "inputs": {
+                        "method": "GET",
+                        "uri": "@{variables('getURI')}",
+                        "authentication": {
+                          "type": "ManagedServiceIdentity"
+                        }
+                      },
+                      "runAfter": {}
+                    }
+                  },
+                  "runAfter": {
+                    "ResumeAPI": [
+                      "Succeeded"
+                    ]
+                  }
+                }
+              },
+              "runAfter": {
+                "GetAPI": [
                   "Succeeded"
                 ]
               }
@@ -208,6 +339,12 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "action": {
+                      "type": "string"
+                    },
+                    "sku": {
+                      "type": "string"
+                    },
                     "subscriptionId": {
                       "type": "string"
                     },
