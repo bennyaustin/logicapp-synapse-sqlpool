@@ -90,18 +90,6 @@
                 ]
               }
             },
-            "HTTP_200_Response": {
-              "type": "Response",
-              "kind": "http",
-              "inputs": {
-                "statusCode": 200
-              },
-              "runAfter": {
-                "Resume": [
-                  "Succeeded"
-                ]
-              }
-            },
             "resourceGroupName": {
               "type": "InitializeVariable",
               "inputs": {
@@ -187,7 +175,7 @@
                 ]
               }
             },
-            "GetAPI": {
+            "getAPI": {
               "type": "Http",
               "inputs": {
                 "method": "GET",
@@ -197,7 +185,7 @@
                 }
               },
               "runAfter": {
-                "pauseURI": [
+                "userActivityURI": [
                   "Succeeded"
                 ]
               }
@@ -266,7 +254,7 @@
                 ]
               }
             },
-            "Resume": {
+            "resume": {
               "type": "If",
               "expression": {
                 "and": [
@@ -278,14 +266,14 @@
                   },
                   {
                     "equals": [
-                      "@body('GetAPI')?['properties']?['status']",
+                      "@body('getAPI')?['properties']?['status']",
                       "Paused"
                     ]
                   }
                 ]
               },
               "actions": {
-                "ResumeAPI": {
+                "resumeAPI": {
                   "type": "Http",
                   "inputs": {
                     "method": "POST",
@@ -296,15 +284,15 @@
                   },
                   "runAfter": {}
                 },
-                "Until-Resume": {
+                "until-resume": {
                   "type": "Until",
-                  "expression": "@equals(body('GetAPI-Resume')?['properties']?['status'], 'Online')",
+                  "expression": "@equals(body('getAPI-Resume')?['properties']?['status'], 'Online')",
                   "limit": {
                     "count": 5000,
                     "timeout": "PT1H"
                   },
                   "actions": {
-                    "GetAPI-Resume": {
+                    "getAPI-Resume": {
                       "type": "Http",
                       "inputs": {
                         "method": "GET",
@@ -317,14 +305,140 @@
                     }
                   },
                   "runAfter": {
-                    "ResumeAPI": [
+                    "resumeAPI": [
                       "Succeeded"
                     ]
                   }
                 }
               },
               "runAfter": {
-                "GetAPI": [
+                "getAPI": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "pause": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@variables('action')",
+                      "pause"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@body('getAPI')?['properties']?['status']",
+                      "Online"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "userActivityAPI": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "GET",
+                    "uri": "@{variables('userActivityURI')}",
+                    "authentication": {
+                      "type": "ManagedServiceIdentity"
+                    }
+                  },
+                  "runAfter": {}
+                },
+                "noUserActivity": {
+                  "type": "If",
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@body('userActivityAPI')?['properties']?['activeQueriesCount']",
+                          0
+                        ]
+                      }
+                    ]
+                  },
+                  "actions": {
+                    "pauseAPI": {
+                      "type": "Http",
+                      "inputs": {
+                        "method": "POST",
+                        "uri": "@{variables('pauseURI')}",
+                        "authentication": {
+                          "type": "ManagedServiceIdentity"
+                        }
+                      },
+                      "runAfter": {}
+                    },
+                    "Until": {
+                      "type": "Until",
+                      "expression": "@equals(body('getAPI-pause')?['properties']?['status'], 'Paused')",
+                      "limit": {
+                        "count": 5000,
+                        "timeout": "PT1H"
+                      },
+                      "actions": {
+                        "getAPI-pause": {
+                          "type": "Http",
+                          "inputs": {
+                            "method": "GET",
+                            "uri": "@{variables('getURI')}",
+                            "authentication": {
+                              "type": "ManagedServiceIdentity"
+                            }
+                          },
+                          "runAfter": {}
+                        }
+                      },
+                      "runAfter": {
+                        "pauseAPI": [
+                          "Succeeded"
+                        ]
+                      }
+                    }
+                  },
+                  "runAfter": {
+                    "userActivityAPI": [
+                      "Succeeded"
+                    ]
+                  }
+                }
+              },
+              "runAfter": {
+                "getAPI": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "userActivityURI": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "userActivityURI",
+                    "type": "string",
+                    "value": "@{concat('https://management.azure.com/subscriptions/',variables('subscriptionId'),'/resourceGroups/',variables('resourceGroupName'),'/providers/Microsoft.Synapse/workspaces/',variables('workspaceName'),'/sqlPools/',variables('sqlPoolName'),'/dataWarehouseUserActivities/current?api-version=',variables('apiVersion'))}"
+                  }
+                ]
+              },
+              "runAfter": {
+                "pauseURI": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "http200": {
+              "type": "Response",
+              "kind": "http",
+              "inputs": {
+                "statusCode": 200
+              },
+              "runAfter": {
+                "pause": [
+                  "Succeeded"
+                ],
+                "resume": [
                   "Succeeded"
                 ]
               }
