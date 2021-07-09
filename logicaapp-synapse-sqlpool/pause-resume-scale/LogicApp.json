@@ -197,7 +197,7 @@
                   {
                     "name": "action",
                     "type": "string",
-                    "value": "@{triggerBody()?['action']}"
+                    "value": "@triggerBody()?['action']"
                   }
                 ]
               },
@@ -210,7 +210,7 @@
                   {
                     "name": "sku",
                     "type": "string",
-                    "value": "@{triggerBody()?['sku']}"
+                    "value": "@{toLower(triggerBody()?['sku'])}"
                   }
                 ]
               },
@@ -404,7 +404,7 @@
                 }
               },
               "runAfter": {
-                "getAPI": [
+                "currentSKU": [
                   "Succeeded"
                 ]
               }
@@ -422,6 +422,102 @@
               },
               "runAfter": {
                 "apiVersion": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "currentSKU": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "currentSKU",
+                    "type": "string",
+                    "value": "@{toLower(body('getAPI')?['sku']?['name'])}"
+                  }
+                ]
+              },
+              "runAfter": {
+                "getAPI": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "dialUp": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@variables('action')",
+                      "dialup"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@greater(variables('sku'), variables('currentSKU'))",
+                      true
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@variables('countActiveQueries')",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "resumeBeforeDialUp": {
+                  "type": "If",
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@body('getAPI')?['properties']?['status']",
+                          "Paused"
+                        ]
+                      }
+                    ]
+                  },
+                  "actions": {
+                    "resumeAPI-BeforeDialUp": {
+                      "type": "Http",
+                      "inputs": {
+                        "method": "POST",
+                        "uri": "@variables('resumeURI')",
+                        "authentication": {
+                          "type": "ManagedServiceIdentity"
+                        }
+                      },
+                      "runAfter": {}
+                    }
+                  },
+                  "runAfter": {}
+                },
+                "dialUpAPI": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "PATCH",
+                    "uri": "@variables('getURI')",
+                    "body": {
+                      "sku": {
+                        "name": "@variables('sku')"
+                      }
+                    },
+                    "authentication": {
+                      "type": "ManagedServiceIdentity"
+                    }
+                  },
+                  "runAfter": {
+                    "resumeBeforeDialUp": [
+                      "Succeeded"
+                    ]
+                  }
+                }
+              },
+              "runAfter": {
+                "getCountActiveQueries": [
                   "Succeeded"
                 ]
               }
