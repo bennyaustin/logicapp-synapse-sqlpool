@@ -170,7 +170,7 @@
                 ]
               },
               "runAfter": {
-                "apiVersion": [
+                "countActiveQueries": [
                   "Succeeded"
                 ]
               }
@@ -283,36 +283,10 @@
                     }
                   },
                   "runAfter": {}
-                },
-                "until-resume": {
-                  "type": "Until",
-                  "expression": "@equals(body('getAPI-Resume')?['properties']?['status'], 'Online')",
-                  "limit": {
-                    "count": 5000,
-                    "timeout": "PT1H"
-                  },
-                  "actions": {
-                    "getAPI-Resume": {
-                      "type": "Http",
-                      "inputs": {
-                        "method": "GET",
-                        "uri": "@{variables('getURI')}",
-                        "authentication": {
-                          "type": "ManagedServiceIdentity"
-                        }
-                      },
-                      "runAfter": {}
-                    }
-                  },
-                  "runAfter": {
-                    "resumeAPI": [
-                      "Succeeded"
-                    ]
-                  }
                 }
               },
               "runAfter": {
-                "getAPI": [
+                "getCountActiveQueries": [
                   "Succeeded"
                 ]
               }
@@ -332,81 +306,30 @@
                       "@body('getAPI')?['properties']?['status']",
                       "Online"
                     ]
+                  },
+                  {
+                    "equals": [
+                      "@variables('countActiveQueries')",
+                      0
+                    ]
                   }
                 ]
               },
               "actions": {
-                "userActivityAPI": {
+                "pauseAPI": {
                   "type": "Http",
                   "inputs": {
-                    "method": "GET",
-                    "uri": "@{variables('userActivityURI')}",
+                    "method": "POST",
+                    "uri": "@variables('pauseURI')",
                     "authentication": {
                       "type": "ManagedServiceIdentity"
                     }
                   },
                   "runAfter": {}
-                },
-                "noUserActivity": {
-                  "type": "If",
-                  "expression": {
-                    "and": [
-                      {
-                        "equals": [
-                          "@body('userActivityAPI')?['properties']?['activeQueriesCount']",
-                          0
-                        ]
-                      }
-                    ]
-                  },
-                  "actions": {
-                    "pauseAPI": {
-                      "type": "Http",
-                      "inputs": {
-                        "method": "POST",
-                        "uri": "@{variables('pauseURI')}",
-                        "authentication": {
-                          "type": "ManagedServiceIdentity"
-                        }
-                      },
-                      "runAfter": {}
-                    },
-                    "Until": {
-                      "type": "Until",
-                      "expression": "@equals(body('getAPI-pause')?['properties']?['status'], 'Paused')",
-                      "limit": {
-                        "count": 5000,
-                        "timeout": "PT1H"
-                      },
-                      "actions": {
-                        "getAPI-pause": {
-                          "type": "Http",
-                          "inputs": {
-                            "method": "GET",
-                            "uri": "@{variables('getURI')}",
-                            "authentication": {
-                              "type": "ManagedServiceIdentity"
-                            }
-                          },
-                          "runAfter": {}
-                        }
-                      },
-                      "runAfter": {
-                        "pauseAPI": [
-                          "Succeeded"
-                        ]
-                      }
-                    }
-                  },
-                  "runAfter": {
-                    "userActivityAPI": [
-                      "Succeeded"
-                    ]
-                  }
                 }
               },
               "runAfter": {
-                "getAPI": [
+                "getCountActiveQueries": [
                   "Succeeded"
                 ]
               }
@@ -439,6 +362,66 @@
                   "Succeeded"
                 ],
                 "resume": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "getCountActiveQueries": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@body('getAPI')?['properties']?['status']",
+                      "Online"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "userActivityAPI": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "GET",
+                    "uri": "@{variables('userActivityURI')}",
+                    "authentication": {
+                      "type": "ManagedServiceIdentity"
+                    }
+                  },
+                  "runAfter": {}
+                },
+                "setCountActiveQueries": {
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "countActiveQueries",
+                    "value": "@body('userActivityAPI')?['properties']?['activeQueriesCount']"
+                  },
+                  "runAfter": {
+                    "userActivityAPI": [
+                      "Succeeded"
+                    ]
+                  }
+                }
+              },
+              "runAfter": {
+                "getAPI": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "countActiveQueries": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "countActiveQueries",
+                    "type": "integer",
+                    "value": 0
+                  }
+                ]
+              },
+              "runAfter": {
+                "apiVersion": [
                   "Succeeded"
                 ]
               }
