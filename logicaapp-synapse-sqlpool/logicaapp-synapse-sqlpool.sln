@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31327.141
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "pause-resume-scale", "pause-resume-scale\pause-resume-scale.deployproj", "{4D233438-3C64-46BD-85BA-802B87316E8B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4D233438-3C64-46BD-85BA-802B87316E8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D233438-3C64-46BD-85BA-802B87316E8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D233438-3C64-46BD-85BA-802B87316E8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D233438-3C64-46BD-85BA-802B87316E8B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1C1373E5-398B-4D75-BE4A-F346FBE24CCD}
+	EndGlobalSection
+EndGlobal

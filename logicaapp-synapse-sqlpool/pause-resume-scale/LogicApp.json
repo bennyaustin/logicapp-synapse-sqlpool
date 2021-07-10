@@ -1,0 +1,655 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "logicAppName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
+        "description": "Name of the Logic App."
+      }
+    },
+    "logicAppLocation": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "allowedValues": [
+        "[resourceGroup().location]",
+        "eastasia",
+        "southeastasia",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "westus",
+        "northcentralus",
+        "southcentralus",
+        "northeurope",
+        "westeurope",
+        "japanwest",
+        "japaneast",
+        "brazilsouth",
+        "australiaeast",
+        "australiasoutheast",
+        "southindia",
+        "centralindia",
+        "westindia",
+        "canadacentral",
+        "canadaeast",
+        "uksouth",
+        "ukwest",
+        "westcentralus",
+        "westus2",
+        "koreacentral",
+        "koreasouth",
+        "francecentral",
+        "francesouth",
+        "uaecentral",
+        "uaenorth",
+        "southafricanorth",
+        "southafricawest",
+        "switzerlandnorth",
+        "switzerlandwest",
+        "germanynorth",
+        "germanywestcentral",
+        "norwayeast",
+        "brazilsoutheast"
+      ],
+      "metadata": {
+        "description": "Location of the Logic App."
+      }
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "name": "[parameters('logicAppName')]",
+      "type": "Microsoft.Logic/workflows",
+      "location": "[parameters('logicAppLocation')]",
+      "tags": {
+        "displayName": "LogicApp"
+      },
+      "apiVersion": "2016-06-01",
+      "properties": {
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "actions": {
+            "subscriptionId": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "subscriptionId",
+                    "type": "string",
+                    "value": "@{triggerBody()?['subscriptionId']}"
+                  }
+                ]
+              },
+              "runAfter": {
+                "sku": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "resourceGroupName": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "resourceGroupName",
+                    "type": "string",
+                    "value": "@{triggerBody()?['resourceGroupName']}"
+                  }
+                ]
+              },
+              "runAfter": {
+                "workspaceName": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "workspaceName": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "workspaceName",
+                    "type": "string",
+                    "value": "@{triggerBody()?['workspaceName']}"
+                  }
+                ]
+              },
+              "runAfter": {
+                "subscriptionId": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "sqlPoolName": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "sqlPoolName",
+                    "type": "string",
+                    "value": "@{triggerBody()?['sqlPoolName']}"
+                  }
+                ]
+              },
+              "runAfter": {
+                "resourceGroupName": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "apiVersion": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "apiVersion",
+                    "type": "string",
+                    "value": "@{triggerBody()?['apiVersion']}"
+                  }
+                ]
+              },
+              "runAfter": {
+                "sqlPoolName": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "getURI": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "getURI",
+                    "type": "string",
+                    "value": "@{concat('https://management.azure.com/subscriptions/',variables('subscriptionId'),'/resourceGroups/',variables('resourceGroupName'),'/providers/Microsoft.Synapse/workspaces/', variables('workspaceName'),'/sqlPools/',variables('sqlPoolName'),'?api-version=',variables('apiVersion'))}"
+                  }
+                ]
+              },
+              "runAfter": {
+                "countActiveQueries": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "getAPI": {
+              "type": "Http",
+              "inputs": {
+                "method": "GET",
+                "uri": "@{variables('getURI')}",
+                "authentication": {
+                  "type": "ManagedServiceIdentity"
+                }
+              },
+              "runAfter": {
+                "userActivityURI": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "action": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "action",
+                    "type": "string",
+                    "value": "@triggerBody()?['action']"
+                  }
+                ]
+              },
+              "runAfter": {}
+            },
+            "sku": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "sku",
+                    "type": "string",
+                    "value": "@{toLower(triggerBody()?['sku'])}"
+                  }
+                ]
+              },
+              "runAfter": {
+                "action": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "resumeURI": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "resumeURI",
+                    "type": "string",
+                    "value": "@{concat('https://management.azure.com/subscriptions/',variables('subscriptionId'),'/resourceGroups/', variables('resourceGroupName'),'/providers/Microsoft.Synapse/workspaces/',variables('workspaceName'),'/sqlPools/',variables('sqlPoolName'),'/resume?api-version=', variables('apiVersion'))}"
+                  }
+                ]
+              },
+              "runAfter": {
+                "getURI": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "pauseURI": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "pauseURI",
+                    "type": "string",
+                    "value": "@concat('https://management.azure.com/subscriptions/',variables('subscriptionId'),'/resourceGroups/', variables('resourceGroupName'),'/providers/Microsoft.Synapse/workspaces/',variables('workspaceName'),'/sqlPools/',variables('sqlPoolName'),'/pause?api-version=', variables('apiVersion'))"
+                  }
+                ]
+              },
+              "runAfter": {
+                "resumeURI": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "resume": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@variables('action')",
+                      "resume"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@body('getAPI')?['properties']?['status']",
+                      "Paused"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "resumeAPI": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "POST",
+                    "uri": "@{variables('resumeURI')}",
+                    "authentication": {
+                      "type": "ManagedServiceIdentity"
+                    }
+                  },
+                  "runAfter": {}
+                }
+              },
+              "runAfter": {
+                "getCountActiveQueries": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "pause": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@variables('action')",
+                      "pause"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@body('getAPI')?['properties']?['status']",
+                      "Online"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@variables('countActiveQueries')",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "pauseAPI": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "POST",
+                    "uri": "@variables('pauseURI')",
+                    "authentication": {
+                      "type": "ManagedServiceIdentity"
+                    }
+                  },
+                  "runAfter": {}
+                }
+              },
+              "runAfter": {
+                "getCountActiveQueries": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "userActivityURI": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "userActivityURI",
+                    "type": "string",
+                    "value": "@{concat('https://management.azure.com/subscriptions/',variables('subscriptionId'),'/resourceGroups/',variables('resourceGroupName'),'/providers/Microsoft.Synapse/workspaces/',variables('workspaceName'),'/sqlPools/',variables('sqlPoolName'),'/dataWarehouseUserActivities/current?api-version=',variables('apiVersion'))}"
+                  }
+                ]
+              },
+              "runAfter": {
+                "pauseURI": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "getCountActiveQueries": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@body('getAPI')?['properties']?['status']",
+                      "Online"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "userActivityAPI": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "GET",
+                    "uri": "@{variables('userActivityURI')}",
+                    "authentication": {
+                      "type": "ManagedServiceIdentity"
+                    }
+                  },
+                  "runAfter": {}
+                },
+                "setCountActiveQueries": {
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "countActiveQueries",
+                    "value": "@body('userActivityAPI')?['properties']?['activeQueriesCount']"
+                  },
+                  "runAfter": {
+                    "userActivityAPI": [
+                      "Succeeded"
+                    ]
+                  }
+                }
+              },
+              "runAfter": {
+                "currentSKU": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "countActiveQueries": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "countActiveQueries",
+                    "type": "integer",
+                    "value": 0
+                  }
+                ]
+              },
+              "runAfter": {
+                "apiVersion": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "currentSKU": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "currentSKU",
+                    "type": "string",
+                    "value": "@{toLower(body('getAPI')?['sku']?['name'])}"
+                  }
+                ]
+              },
+              "runAfter": {
+                "getAPI": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "dialUp": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@variables('action')",
+                      "dialup"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@greater(variables('sku'), variables('currentSKU'))",
+                      true
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@variables('countActiveQueries')",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "resumeBeforeDialUp": {
+                  "type": "If",
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@body('getAPI')?['properties']?['status']",
+                          "Paused"
+                        ]
+                      }
+                    ]
+                  },
+                  "actions": {
+                    "resumeAPI-BeforeDialUp": {
+                      "type": "Http",
+                      "inputs": {
+                        "method": "POST",
+                        "uri": "@variables('resumeURI')",
+                        "authentication": {
+                          "type": "ManagedServiceIdentity"
+                        }
+                      },
+                      "runAfter": {}
+                    }
+                  },
+                  "runAfter": {}
+                },
+                "dialUpAPI": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "PATCH",
+                    "uri": "@variables('getURI')",
+                    "body": {
+                      "sku": {
+                        "name": "@variables('sku')"
+                      }
+                    },
+                    "authentication": {
+                      "type": "ManagedServiceIdentity"
+                    }
+                  },
+                  "runAfter": {
+                    "resumeBeforeDialUp": [
+                      "Succeeded"
+                    ]
+                  }
+                }
+              },
+              "runAfter": {
+                "getCountActiveQueries": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "dialDown": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@variables('action')",
+                      "dialdown"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@greater(variables('currentSKU'),variables('sku'))",
+                      true
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@variables('countActiveQueries')",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "resumeBeforeDialDown": {
+                  "type": "If",
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@body('getAPI')?['properties']?['status']",
+                          "Paused"
+                        ]
+                      }
+                    ]
+                  },
+                  "actions": {
+                    "resumeAPI-BeforeDialDown": {
+                      "type": "Http",
+                      "inputs": {
+                        "method": "POST",
+                        "uri": "@variables('resumeURI')",
+                        "authentication": {
+                          "type": "ManagedServiceIdentity"
+                        }
+                      },
+                      "runAfter": {}
+                    }
+                  },
+                  "runAfter": {}
+                },
+                "dialDownAPI": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "PATCH",
+                    "uri": "@variables('getURI')",
+                    "body": {
+                      "sku": {
+                        "name": "@variables('sku')"
+                      }
+                    },
+                    "authentication": {
+                      "type": "ManagedServiceIdentity"
+                    }
+                  },
+                  "runAfter": {
+                    "resumeBeforeDialDown": [
+                      "Succeeded"
+                    ]
+                  }
+                }
+              },
+              "runAfter": {
+                "getCountActiveQueries": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "http200": {
+              "type": "Response",
+              "kind": "http",
+              "inputs": {
+                "statusCode": 200
+              },
+              "runAfter": {
+                "resume": [
+                  "Succeeded"
+                ],
+                "pause": [
+                  "Succeeded"
+                ],
+                "dialUp": [
+                  "Succeeded"
+                ],
+                "dialDown": [
+                  "Succeeded"
+                ]
+              }
+            }
+          },
+          "parameters": {},
+          "triggers": {
+            "manual": {
+              "type": "Request",
+              "kind": "Http",
+              "inputs": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "action": {
+                      "type": "string"
+                    },
+                    "sku": {
+                      "type": "string"
+                    },
+                    "subscriptionId": {
+                      "type": "string"
+                    },
+                    "resourceGroupName": {
+                      "type": "string"
+                    },
+                    "workspaceName": {
+                      "type": "string"
+                    },
+                    "sqlPoolName": {
+                      "type": "string"
+                    },
+                    "apiVersion": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "method": "POST"
+              }
+            }
+          },
+          "contentVersion": "1.0.0.0",
+          "outputs": {}
+        },
+        "parameters": {}
+      }
+    }
+  ],
+  "outputs": {}
+}
