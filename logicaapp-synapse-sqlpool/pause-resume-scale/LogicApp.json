@@ -351,21 +351,6 @@
                 ]
               }
             },
-            "http200": {
-              "type": "Response",
-              "kind": "http",
-              "inputs": {
-                "statusCode": 200
-              },
-              "runAfter": {
-                "pause": [
-                  "Succeeded"
-                ],
-                "resume": [
-                  "Succeeded"
-                ]
-              }
-            },
             "getCountActiveQueries": {
               "type": "If",
               "expression": {
@@ -518,6 +503,106 @@
               },
               "runAfter": {
                 "getCountActiveQueries": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "dialDown": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@variables('action')",
+                      "dialdown"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@greater(variables('currentSKU'),variables('sku'))",
+                      true
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@variables('countActiveQueries')",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "resumeBeforeDialDown": {
+                  "type": "If",
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@body('getAPI')?['properties']?['status']",
+                          "Paused"
+                        ]
+                      }
+                    ]
+                  },
+                  "actions": {
+                    "resumeAPI-BeforeDialDown": {
+                      "type": "Http",
+                      "inputs": {
+                        "method": "POST",
+                        "uri": "@variables('resumeURI')",
+                        "authentication": {
+                          "type": "ManagedServiceIdentity"
+                        }
+                      },
+                      "runAfter": {}
+                    }
+                  },
+                  "runAfter": {}
+                },
+                "dialDownAPI": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "PATCH",
+                    "uri": "@variables('getURI')",
+                    "body": {
+                      "sku": {
+                        "name": "@variables('sku')"
+                      }
+                    },
+                    "authentication": {
+                      "type": "ManagedServiceIdentity"
+                    }
+                  },
+                  "runAfter": {
+                    "resumeBeforeDialDown": [
+                      "Succeeded"
+                    ]
+                  }
+                }
+              },
+              "runAfter": {
+                "getCountActiveQueries": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "http200": {
+              "type": "Response",
+              "kind": "http",
+              "inputs": {
+                "statusCode": 200
+              },
+              "runAfter": {
+                "resume": [
+                  "Succeeded"
+                ],
+                "pause": [
+                  "Succeeded"
+                ],
+                "dialUp": [
+                  "Succeeded"
+                ],
+                "dialDown": [
                   "Succeeded"
                 ]
               }
