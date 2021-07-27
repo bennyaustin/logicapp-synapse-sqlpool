@@ -1,5 +1,4 @@
-# logicapp-synapse-sqlpool
-Logic App to Pause, Resume, Dial-Up and Dial-Down Synapse Dedicated SQL Pool
+Azure Logic App to Pause, Resume, Dial-Up and Dial-Down an instance of Azure Synapse Dedicated SQL Pool
 
 ## Pre-Requisites
  - Grant the Managed Identity of this Logic App the Contibutor role to the Synapse Dedicated SQL Pool that you wish to manage
