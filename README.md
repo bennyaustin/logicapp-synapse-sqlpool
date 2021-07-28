@@ -1,7 +1,16 @@
-Use this Logic App to Pause, Resume, Dial-Up and Dial-Down an instance of Azure Synapse Dedicated SQL Pool. 
+This Logic App is used to Pause, Resume, Dial-Up and Dial-Down an instance of Azure Synapse Dedicated SQL Pool. 
 
 ## Usage
-This logic app is invoked by calling the REST API endpoint. It supports the following parameters. The parameters are passed in the request body.
+The logic app is invoked by calling the REST API endpoint. It supports the following parameters. The parameters are passed in the request body.
+
+|Parameters|Values|
+|:---------|:-----|
+|action|pause, resume, dialup, dialdown|
+|sku||
+|subscriptionId|Azure Subscription ID|
+|workspaceName|Synapse Analytics Workspace Name|
+|sqlPoolName|Name of Dedicated SQL Pool|
+|apiVersion| Version of Synapse Analytics REST API, Default value of 2021-03-01|
 
 ### Sample Request Body
 ```json
