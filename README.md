@@ -11,3 +11,8 @@ GO
 EXEC sp_addrolemember 'db_owner', [logic-app-name]
 GO
 ```
+## Deploy project to Azure using Powershell Az module
+From PowerShell console execute the following commands
+- cd 'bin folder'
+- Connect-AzAccount -Tenant XX-YY-ZZ -Subscription XX-YY-ZZ
+- .\Deploy-AzureResourceGroup.ps1 -ArtifactStagingDirectory . -TemplateFile LogicApp.json -TemplateParametersFile LogicApp.parameters.json
