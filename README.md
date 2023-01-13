@@ -13,6 +13,8 @@ GO
 ```
 ## Deploy project to Azure using Powershell Az module
 From PowerShell console execute the following commands
-- cd 'bin folder'
-- Connect-AzAccount -Tenant XX-YY-ZZ -Subscription XX-YY-ZZ
-- .\Deploy-AzureResourceGroup.ps1 -ArtifactStagingDirectory . -TemplateFile LogicApp.json -TemplateParametersFile LogicApp.parameters.json
+```console
+cd 'bin folder'
+Connect-AzAccount -Tenant XX-YY-ZZ -Subscription XX-YY-ZZ
+.\Deploy-AzureResourceGroup.ps1 -ArtifactStagingDirectory . -TemplateFile LogicApp.json -TemplateParametersFile LogicApp.parameters.json
+```
