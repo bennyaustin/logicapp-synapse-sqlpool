@@ -62,3 +62,6 @@ For example the body payload will look like this:
     "apiVersion": "2021-03-01"
  }
 ```
+## Synapse Pipeline
+Azure Data Factory/Synapse Pipeline to call this logic app is found in this [repo](https://github.com/bennyaustin/synapse-dataplatform).
+Look for SQLPool-Pause-Resume-Scale pipeline in [Manage-SQLPool/Manage-All-SQLPools](https://github.com/bennyaustin/synapse-dataplatform/blob/main/pipeline/Manage-All-SQLPools.json)
