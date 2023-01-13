@@ -18,3 +18,34 @@ cd 'bin folder'
 Connect-AzAccount -Tenant XX-YY-ZZ -Subscription XX-YY-ZZ
 .\Deploy-AzureResourceGroup.ps1 -ArtifactStagingDirectory . -TemplateFile LogicApp.json -TemplateParametersFile LogicApp.parameters.json
 ```
+
+## HTTP Trigger POST Payload Schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string"
+    },
+    "sku": {
+      "type": "string"
+    },
+    "subscriptionId": {
+      "type": "string"
+    },
+    "resourceGroupName": {
+      "type": "string"
+    },
+    "workspaceName": {
+      "type": "string"
+    },
+    "sqlPoolName": {
+      "type": "string"
+    },
+    "apiVersion": {
+      "type": "string"
+    }
+  }
+}
+```
