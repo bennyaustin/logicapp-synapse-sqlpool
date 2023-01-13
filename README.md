@@ -49,3 +49,16 @@ Connect-AzAccount -Tenant XX-YY-ZZ -Subscription XX-YY-ZZ
   }
 }
 ```
+
+For example the body payload will look like this:
+```json
+{
+    "action": "pause", #valid values - pause, resume, scale
+    "sku": "DW100c",
+    "subscriptionId": "XXX-YYY-ZZZ",
+    "resourceGroupName": "rg-dataplatform",
+    "workspaceName": "ba-synapseanalytics01",
+    "sqlPoolName": "dw01",
+    "apiVersion": "2021-03-01"
+ }
+```
