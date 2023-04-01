@@ -25,6 +25,6 @@ jobs:
         scope: resourcegroup
         resourceGroupName: 'rg-cost-optimisation'
         deploymentName: 'logicapp-synapse-sqlpool_deployment'
-        template: 'logicapp-synapse-sqlpool/logicaapp-synapse-sqlpool/pause-resume-scale/LogicApp.json'
-        parameters: 'logicapp-synapse-sqlpool/logicaapp-synapse-sqlpool/pause-resume-scale/LogicApp.parameters.json'
+        template: 'logicaapp-synapse-sqlpool/pause-resume-scale/LogicApp.json'
+        parameters: 'logicaapp-synapse-sqlpool/pause-resume-scale/LogicApp.parameters.json'
         failOnStdErr: false
