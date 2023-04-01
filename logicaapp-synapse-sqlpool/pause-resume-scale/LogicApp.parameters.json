@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "logicAppName": {
-      "value": "ba-logicaapp01-kn3acb6lw3vr4-sqlpool-pause-resume-scale"
+      "value": "ba-logicaapp01-sqlpool-pause-resume-scale"
     }
   }
 }
