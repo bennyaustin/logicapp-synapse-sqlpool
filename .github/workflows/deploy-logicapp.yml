@@ -23,7 +23,7 @@ jobs:
       uses: azure/arm-deploy@v1
       with:
         scope: resourcegroup
-        resourceGroupName: 'rg-cost-optimisation'
+        resourceGroupName: 'prg-synapse-dp'
         deploymentName: 'logicapp-synapse-sqlpool_deployment'
         template: 'logicaapp-synapse-sqlpool/pause-resume-scale/LogicApp.json'
         parameters: 'logicaapp-synapse-sqlpool/pause-resume-scale/LogicApp.parameters.json'
